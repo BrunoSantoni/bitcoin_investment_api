@@ -4,6 +4,7 @@ import { Encrypt } from '@/domain/contracts/cipher.contract'
 import { CreateAccount, FindUserAccountByEmail } from '@/domain/contracts/account-actions.contract'
 import { SavedUser, SavedUserInput, User } from '@/domain/entities/user.entity'
 import { UserSignUpInput } from '@/domain/contracts/user-sign-up.contract'
+import { userSignUpInputMock } from '@/tests/domain/mocks/user.mock'
 
 describe('UserSignUpService', () => {
   let sut: UserSignUpService
@@ -15,11 +16,7 @@ describe('UserSignUpService', () => {
   let fakeUser: SavedUser
 
   beforeAll(() => {
-    fakeInput = {
-      name: 'any-name',
-      email: 'any@mail.com',
-      password: 'any-value',
-    }
+    fakeInput = userSignUpInputMock()
     fakeUser = makeSavedUser()
 
     fakeHashedPassword = 'any-hashed-value'

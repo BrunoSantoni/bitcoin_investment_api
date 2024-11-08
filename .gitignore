@@ -10,6 +10,9 @@ coverage
 # Environment variables
 .env
 
-#IDE's
+# IDE's
 .idea
 .vscode
+
+# Local
+db

@@ -9,14 +9,26 @@ export type UserInput = {
 export type SavedUserInput = UserInput & { id: string }
 
 export class User {
-  private readonly name: string
-  private readonly email: string
-  private readonly password: string
+  private readonly _name: string
+  private readonly _email: string
+  private readonly _password: string
 
   constructor(input: UserInput) {
-    this.name = input.name
-    this.email = this.setEmail(input.email)
-    this.password = input.hashedPassword
+    this._name = input.name
+    this._email = this.setEmail(input.email)
+    this._password = input.hashedPassword
+  }
+
+  public get name(): string {
+    return this._name
+  }
+
+  public get email(): string {
+    return this._email
+  }
+
+  public get password(): string {
+    return this._password
   }
 
   private setEmail(email: string): string {

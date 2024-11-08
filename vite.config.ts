@@ -9,7 +9,7 @@ export default defineConfig({
       },
     },
     silent: true,
-    exclude: [...configDefaults.exclude],
+    exclude: [...configDefaults.exclude, 'db/**'],
     coverage: {
       all: true,
       provider: 'v8',
@@ -18,6 +18,7 @@ export default defineConfig({
         'tests/**/*.ts',
         '**/contracts/**',
         '**/errors/**',
+        'db/**',
       ],
       thresholds: {
         statements: 100,
