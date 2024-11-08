@@ -1,0 +1,15 @@
+# Packages
+node_modules
+
+# Builded code
+dist
+
+# Test coverage
+coverage
+
+# Environment variables
+.env
+
+#IDE's
+.idea
+.vscode
