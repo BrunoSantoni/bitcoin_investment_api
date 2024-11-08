@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { User, UserInput } from '@/domain/entities/user.entity'
+import { SavedUser, SavedUserInput, User, UserInput } from '@/domain/entities/user.entity'
 
 describe('User Entity', () => {
   it('should instantiate a new User when correct input is provided', () => {
@@ -22,5 +22,21 @@ describe('User Entity', () => {
     }
 
     expect(() => new User(input)).toThrow()
+  })
+})
+
+describe('SavedUser Entity', () => {
+  it('should instantiate a new Saved User with an id', () => {
+    const input: SavedUserInput = {
+      name: 'any-name',
+      email: 'any@mail.com',
+      hashedPassword: 'any-hashed-password',
+      id: 'any-id',
+    }
+
+    const output = new SavedUser(input)
+
+    expect(output).toBeInstanceOf(SavedUser)
+    expect(output.id).toBeDefined()
   })
 })

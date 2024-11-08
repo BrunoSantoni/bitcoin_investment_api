@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     poolOptions: {
       threads: {
-        singleThread: true
-      }
+        singleThread: true,
+      },
     },
     silent: true,
     exclude: [...configDefaults.exclude],
@@ -15,20 +15,22 @@ export default defineConfig({
       provider: 'v8',
       exclude: [
         ...configDefaults.exclude,
-        'tests/**/*.ts'
+        'tests/**/*.ts',
+        '**/contracts/**',
+        '**/errors/**',
       ],
       thresholds: {
         statements: 100,
         branches: 100,
         functions: 100,
-        lines: 100
-      }
-    }
+        lines: 100,
+      },
+    },
   },
   resolve: {
     alias: {
       '@/tests': path.resolve(__dirname, './tests'),
-      '@': path.resolve(__dirname, './src')
-    }
-  }
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 })

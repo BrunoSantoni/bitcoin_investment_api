@@ -1,19 +1,18 @@
-import globals from "globals"
-import pluginJs from "@eslint/js"
+import globals from 'globals'
+import pluginJs from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
-import tseslint from "typescript-eslint"
-
+import tseslint from 'typescript-eslint'
 
 export default [
-  stylistic.configs["recommended-flat"],
+  stylistic.configs['recommended-flat'],
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["./src/**/*.ts", "./tests/**/*.ts"],
+    files: ['./src/**/*.ts', './tests/**/*.ts'],
     plugins: {
       'typescript-eslint': tseslint.plugin,
       '@typescript-eslint': tseslint.plugin,
-      '@stylistic': stylistic
+      '@stylistic': stylistic,
     },
     languageOptions: {
       globals: globals.node,
@@ -21,13 +20,13 @@ export default [
         project: './tsconfig.json',
         sourceType: 'module',
         parser: tseslint.parser,
-      }
+      },
     },
     rules: {
-      '@stylistic/max-statements-per-line': 2
-    }
+      '@stylistic/max-statements-per-line': 2,
+    },
   },
   {
-    ignores: ['node_modules', 'dist', 'coverage']
-  }
+    ignores: ['node_modules', 'dist', 'coverage'],
+  },
 ]
