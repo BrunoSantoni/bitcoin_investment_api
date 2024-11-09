@@ -18,6 +18,7 @@ export default defineConfig({
         'tests/**/*.ts',
         '**/contracts/**',
         '**/errors/**',
+        '**/factories/**',
         'db/**',
       ],
       thresholds: {

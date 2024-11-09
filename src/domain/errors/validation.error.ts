@@ -1,5 +1,8 @@
 export class ValidationError extends Error {
-  constructor(message: string = 'Invalid data provided') {
+  readonly extra?: object
+
+  constructor(message: string = 'Invalid data provided', extra?: object) {
     super(`ValidationError: ${message}`)
+    this.extra = extra
   }
 }

@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "local:start": "tsx watch src/main/server.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "db": "yarn generate && yarn prisma migrate dev"
@@ -21,6 +22,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "prisma": "^5.22.0"
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "prisma": "^5.22.0",
+    "zod": "^3.23.8"
   }
 }
