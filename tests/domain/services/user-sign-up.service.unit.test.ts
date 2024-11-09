@@ -6,7 +6,7 @@ import { SavedUser, SavedUserInput, User } from '@/domain/entities/user.entity'
 import { UserSignUpInput } from '@/domain/contracts/user-sign-up.contract'
 import { userSignUpInputMock } from '@/tests/domain/mocks/user.mock'
 
-describe('UserSignUpService', () => {
+describe('User SignUp Service', () => {
   let sut: UserSignUpService
   let fakeInput: UserSignUpInput
   let fakeHashedPassword: string
@@ -54,7 +54,7 @@ describe('UserSignUpService', () => {
     expect(fakeEncrypter.hash).toHaveBeenCalledTimes(1)
   })
 
-  it('should return false when an account with provided email already exists', async () => {
+  it('should return success false with message when an account with provided email already exists', async () => {
     const existingUser = makeSavedUser({
       email: 'existing@mail.com',
       id: 'existing-id',
@@ -63,7 +63,12 @@ describe('UserSignUpService', () => {
 
     const output = await sut.handle(fakeInput)
 
-    expect(output).toBe(false)
+    expect(output).toEqual({
+      success: false,
+      data: {
+        message: 'Account already exists',
+      },
+    })
   })
 
   it('should rethrow when findUserAccountByEmailRepository.findByEmail throws', async () => {
@@ -111,9 +116,14 @@ describe('UserSignUpService', () => {
     expect(() => promise).rejects.toThrow()
   })
 
-  it('should return true when user is successfully created', async () => {
+  it('should return true with created id when user is successfully created', async () => {
     const output = await sut.handle(fakeInput)
 
-    expect(output).toBe(true)
+    expect(output).toEqual({
+      success: true,
+      data: {
+        id: 'any-id',
+      },
+    })
   })
 })

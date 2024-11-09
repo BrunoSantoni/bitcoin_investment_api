@@ -16,7 +16,12 @@ export class UserSignUpService implements UserSignUp {
     const existingUser = await this.findUserAccountByEmailRepository.findByEmail(email)
 
     if (existingUser !== null) {
-      return false
+      return {
+        success: false,
+        data: {
+          message: 'Account already exists',
+        },
+      }
     }
 
     const hashedPassword = this.encrypter.hash(password)
@@ -26,8 +31,11 @@ export class UserSignUpService implements UserSignUp {
       hashedPassword,
     })
 
-    await this.createAccountRepository.create(userEntity)
+    const { id } = await this.createAccountRepository.create(userEntity)
 
-    return true
+    return {
+      success: true,
+      data: { id },
+    }
   }
 }

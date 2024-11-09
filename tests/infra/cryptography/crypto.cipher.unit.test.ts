@@ -5,7 +5,7 @@ import { CipherCompareInput } from '@/domain/contracts/cipher.contract'
 
 vi.mock('node:crypto')
 
-describe('CryptoCipher', () => {
+describe('Crypto Cipher', () => {
   let sut: CryptoCipher
   let hexValueOfWordHashedAsBuffer: string
   let hexValueOfWordAnyBufferAsBuffer: string
