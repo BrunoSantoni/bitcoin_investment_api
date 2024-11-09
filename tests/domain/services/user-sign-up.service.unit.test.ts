@@ -51,7 +51,7 @@ describe('User SignUp Service', () => {
     await sut.handle(fakeInput)
 
     expect(findUserAccountByEmailFakeRepository.findByEmail).toHaveBeenCalledWith('any@mail.com')
-    expect(fakeEncrypter.hash).toHaveBeenCalledTimes(1)
+    expect(findUserAccountByEmailFakeRepository.findByEmail).toHaveBeenCalledTimes(1)
   })
 
   it('should return success false with message when an account with provided email already exists', async () => {

@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { BaseController } from '@/application/controllers/base.controller'
 import { HttpResponse } from '@/application/contracts/http.contract'
-import { success } from '@/application/presenters/http.presenter'
+import { ok } from '@/application/presenters/http.presenter'
 import { ValidationError } from '@/domain/errors/validation.error'
 
 type FakeControllerInput = {
@@ -17,7 +17,7 @@ class FakeController extends BaseController<FakeControllerInput> {
       throw new Error('any-error')
     }
 
-    return success({
+    return ok({
       any: 'data',
     })
   }
@@ -72,7 +72,7 @@ describe('Base Controller', () => {
     })
   })
 
-  it('should return success response when controller.validate executes successfully', async () => {
+  it('should return ok response when controller.validate executes successfully', async () => {
     const output = await sut.handle(fakeInput)
 
     expect(output).toEqual({

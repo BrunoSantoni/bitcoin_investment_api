@@ -1,10 +1,9 @@
 import { z } from 'zod'
 import { BaseZodValidation } from '@/validation/base-zod.validation'
-import { SignUpControllerInput } from '@/application/controllers/sign-up.controller'
+import { SignInControllerInput } from '@/application/controllers/sign-in.controller'
 
-export class SignupControllerZodValidation extends BaseZodValidation<SignUpControllerInput> {
+export class SignInControllerZodValidation extends BaseZodValidation<SignInControllerInput> {
   protected schema = z.object({
-    name: z.string(),
     email: z.string().email('Invalid email'),
     password: z.string().min(8, 'Password should have at least 8 characters'),
   })

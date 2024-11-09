@@ -3,7 +3,7 @@ import { ValidationError } from '@/domain/errors/validation.error'
 import { badRequest, serverError } from '@/application/presenters/http.presenter'
 
 export abstract class BaseController<T> {
-  async handle(payload: never): Promise<HttpResponse> {
+  async handle(payload: T): Promise<HttpResponse> {
     try {
       this.validate(payload)
 

@@ -12,8 +12,10 @@ export abstract class BaseZodValidation<T> implements Validator<T> {
       console.log('[BaseZodValidation]: Validation finished with error', {
         issues: validatedPayload.error.issues,
         errors: validatedPayload.error.errors,
+        message: validatedPayload.error.message,
       })
-      throw new ValidationError(validatedPayload.error.message, {
+      const formattedMessage = validatedPayload.error.errors.map(error => error.message).join(', ')
+      throw new ValidationError(formattedMessage, {
         issues: validatedPayload.error.issues,
         errors: validatedPayload.error.errors,
       })

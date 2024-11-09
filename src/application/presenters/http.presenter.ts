@@ -1,6 +1,6 @@
 import { HttpResponse } from '@/application/contracts/http.contract'
 
-export const success = (data: Record<string, unknown> = {}): HttpResponse => {
+export const ok = (data: Record<string, unknown> = {}): HttpResponse => {
   return {
     status: 200,
     body: data,
@@ -17,6 +17,15 @@ export const created = (data: Record<string, unknown> = {}): HttpResponse => {
 export const badRequest = (message: string = 'Data provided is not valid'): HttpResponse => {
   return {
     status: 400,
+    body: {
+      message,
+    },
+  }
+}
+
+export const unauthorized = (message: string = 'Unauthorized'): HttpResponse => {
+  return {
+    status: 401,
     body: {
       message,
     },

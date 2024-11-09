@@ -1,28 +1,27 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { SignupControllerZodValidation } from '@/validation/signup-controller-zod.validation'
-import { SignUpControllerInput } from '@/application/controllers/sign-up.controller'
 import { ValidationError } from '@/domain/errors/validation.error'
+import { SignInControllerZodValidation } from '@/validation/sign-in-controller-zod.validation'
+import { SignInControllerInput } from '@/application/controllers/sign-in.controller'
 
-describe('SignUp Controller Zod Validation', () => {
-  let sut: SignupControllerZodValidation
-  let validFakeInput: SignUpControllerInput
-  let invalidFakeInput: Partial<SignUpControllerInput>
+describe('SignIn Controller Zod Validation', () => {
+  let sut: SignInControllerZodValidation
+  let validFakeInput: SignInControllerInput
+  let invalidFakeInput: Partial<SignInControllerInput>
 
   beforeAll(() => {
     validFakeInput = {
-      name: 'valid-name',
       email: 'valid@mail.com',
       password: 'valid-password',
     }
 
     invalidFakeInput = {
-      name: 'invalid-name',
-      email: 'invalid',
+      email: 'valid@mail.com',
+      password: 'invalid',
     }
   })
 
   beforeEach(() => {
-    sut = new SignupControllerZodValidation()
+    sut = new SignInControllerZodValidation()
   })
 
   it('should throw error when validation fails', () => {
