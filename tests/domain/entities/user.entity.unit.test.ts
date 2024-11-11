@@ -14,6 +14,20 @@ describe('User Entity', () => {
     expect(output).toBeInstanceOf(User)
   })
 
+  it('should instantiate a new User when correct input is provided with optional properties', () => {
+    const input: UserInput = {
+      name: 'any-name',
+      email: 'any@mail.com',
+      hashedPassword: 'any-hashed-password',
+      balanceInCents: 100,
+    }
+
+    const output = new User(input)
+
+    expect(output).toBeInstanceOf(User)
+    expect(output.balanceInCents).toBe(100)
+  })
+
   it('should throw when email is not valid', () => {
     const input: UserInput = {
       name: 'any-name',

@@ -14,6 +14,13 @@ export const created = (data: Record<string, unknown> = {}): HttpResponse => {
   }
 }
 
+export const noContent = (): HttpResponse => {
+  return {
+    status: 204,
+    body: {},
+  }
+}
+
 export const badRequest = (message: string = 'Data provided is not valid'): HttpResponse => {
   return {
     status: 400,

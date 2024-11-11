@@ -10,3 +10,69 @@ This project consists in an API to invest in Bitcoins.
 5. Generate *Prisma* and run migrations: `yarn db`;
 6. Run tests: `yarn test` or `yarn test:coverage`;
 7. Run application locally: `yarn start:local`.
+# Observations
+- The SendGrid API Key and SendGrid API sender will be sent privately if you want to use the account I created.
+
+# Endpoints
+
+## Create new account
+`POST /account`
+
+### Request
+```shell
+curl --request POST \
+  --url http://{api_url}/account \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"name": "Teste usuário",
+	"email": "teste@mail.com",
+	"password": "12345678"
+  }'
+```
+
+### Response
+`Status Code: 201 Created`
+```json
+{
+	"id": "uuid-for-the-created-user"
+}
+```
+
+## Login into existing account
+`POST /login`
+
+### Request
+```shell
+curl --request POST \
+  --url http://{api_url}/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"email": "teste@mail.com",
+	"password": "12345678"
+  }'
+```
+
+### Response
+`Status Code: 200 OK`
+```json
+{
+  "accessToken": "jwt-token"
+}
+```
+
+## Make a deposit into account
+`POST /account/deposit`
+
+### Request
+```shell
+curl --request POST \
+  --url http://localhost:3333/account/deposit \
+  --header 'Authorization: Bearer jwt-token' \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"amount": 20
+  }'
+```
+
+### Response
+`Status Code: 204 No Content`

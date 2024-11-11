@@ -29,6 +29,7 @@ export class UserSignUpService implements UserSignUp {
       name,
       email,
       hashedPassword,
+      balanceInCents: 0,
     })
 
     const { id } = await this.createAccountRepository.create(userEntity)

@@ -4,6 +4,7 @@ export type UserInput = {
   name: string
   email: string
   hashedPassword: string
+  balanceInCents?: number
 }
 
 export type SavedUserInput = UserInput & { id: string }
@@ -12,11 +13,17 @@ export class User {
   private readonly _name: string
   private readonly _email: string
   private readonly _password: string
+  private readonly _balanceInCents: number
 
   constructor(input: UserInput) {
     this._name = input.name
     this._email = this.setEmail(input.email)
     this._password = input.hashedPassword
+    this._balanceInCents = input.balanceInCents ?? 0
+  }
+
+  public get balanceInCents(): number {
+    return this._balanceInCents
   }
 
   public get name(): string {

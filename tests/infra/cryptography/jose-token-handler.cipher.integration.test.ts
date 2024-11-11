@@ -1,4 +1,4 @@
-import { SignJWT } from 'jose'
+import * as jose from 'jose'
 import { JoseTokenHandler } from '@/infra/cryptography/jose-token-handler.cipher'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -11,6 +11,7 @@ describe('Jose Token Handler Cipher', () => {
     secret = 'any-secret'
     fakeInput = {
       property: 'any-string',
+      userId: 'any-id',
     }
   })
 
@@ -22,7 +23,7 @@ describe('Jose Token Handler Cipher', () => {
 
   describe('encrypt', () => {
     it('should set protected header as HS256', async () => {
-      const setProtectedHeaderSpy = vi.spyOn(SignJWT.prototype, 'setProtectedHeader')
+      const setProtectedHeaderSpy = vi.spyOn(jose.SignJWT.prototype, 'setProtectedHeader')
 
       await sut.encrypt(fakeInput)
 
@@ -31,7 +32,7 @@ describe('Jose Token Handler Cipher', () => {
     })
 
     it('should set expiration time to 1 hour', async () => {
-      const setExpirationTimeSpy = vi.spyOn(SignJWT.prototype, 'setExpirationTime')
+      const setExpirationTimeSpy = vi.spyOn(jose.SignJWT.prototype, 'setExpirationTime')
 
       await sut.encrypt(fakeInput)
 
@@ -40,7 +41,7 @@ describe('Jose Token Handler Cipher', () => {
     })
 
     it('should call sign with encoded secret', async () => {
-      const signSpy = vi.spyOn(SignJWT.prototype, 'sign')
+      const signSpy = vi.spyOn(jose.SignJWT.prototype, 'sign')
 
       await sut.encrypt(fakeInput)
 
@@ -55,11 +56,21 @@ describe('Jose Token Handler Cipher', () => {
     })
 
     it('should rethrow when any of the methods throw', async () => {
-      vi.spyOn(SignJWT.prototype, 'sign').mockRejectedValueOnce(new Error('any-error'))
+      vi.spyOn(jose.SignJWT.prototype, 'sign').mockRejectedValueOnce(new Error('any-error'))
 
       const promise = sut.encrypt(fakeInput)
 
       expect(promise).rejects.toThrow()
+    })
+  })
+
+  describe('decrypt', () => {
+    it('should return decrypted user id on success', async () => {
+      const encrypted = await sut.encrypt(fakeInput)
+
+      const output = await sut.decrypt(encrypted)
+
+      expect(output).toBe('any-id')
     })
   })
 })

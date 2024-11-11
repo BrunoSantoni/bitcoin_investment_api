@@ -24,9 +24,10 @@ export default [
     },
     rules: {
       '@stylistic/max-statements-per-line': 2,
+      '@stylistic/js/brace-style': ['error', '1tbs', { allowSingleLine: true }],
     },
   },
   {
-    ignores: ['node_modules', 'dist', 'coverage', 'db'],
+    ignores: ['node_modules', 'dist', 'coverage', 'db', '**/*.d.ts'],
   },
 ]

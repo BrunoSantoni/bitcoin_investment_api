@@ -20,6 +20,7 @@ export default defineConfig({
         '**/errors/**',
         '**/factories/**',
         'db/**',
+        'src/main/**', // TODO: Remove when e2e tests are implemented
       ],
       thresholds: {
         statements: 100,

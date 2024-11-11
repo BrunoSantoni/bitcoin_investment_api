@@ -18,6 +18,7 @@ model User {
   name      String
   email     String
   password  String
+  balance   BigInt   @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

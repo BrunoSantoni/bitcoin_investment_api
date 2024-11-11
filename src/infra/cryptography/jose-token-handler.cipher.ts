@@ -1,11 +1,11 @@
-import { SignJWT } from 'jose'
-import { TokenGenerator } from '@/domain/contracts/token.contract'
+import { jwtVerify, SignJWT } from 'jose'
+import { TokenGenerator, TokenVerifier } from '@/domain/contracts/token.contract'
 
 export type JoseTokenHandlerInput = {
   secret: string
 }
 
-export class JoseTokenHandler implements TokenGenerator {
+export class JoseTokenHandler implements TokenGenerator, TokenVerifier {
   private readonly encodedSecret: Uint8Array
 
   constructor(input: JoseTokenHandlerInput) {
@@ -21,5 +21,12 @@ export class JoseTokenHandler implements TokenGenerator {
       .sign(this.encodedSecret)
 
     return encryptedText
+  }
+
+  async decrypt(encryptedValues: string): Promise<string> {
+    const { payload } = await jwtVerify<{ userId: string }>(encryptedValues, this.encodedSecret)
+    const userId = payload.userId
+
+    return userId
   }
 }
