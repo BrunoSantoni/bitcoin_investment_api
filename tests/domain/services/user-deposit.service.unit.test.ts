@@ -4,17 +4,20 @@ import { SavedUser } from '@/domain/entities/user.entity'
 import { userEntityInputMock } from '@/tests/domain/mocks/user.mock'
 import { UserDepositService } from '@/domain/services/user-deposit.service'
 import { UserDepositInput } from '@/domain/contracts/user-deposit.contract'
-import { SendConfirmationMailToUser } from '@/domain/contracts/mail.contract'
+import { SendToQueue } from '@/domain/contracts/queue.contract'
 
 describe('User Deposit Service', () => {
   let sut: UserDepositService
+  let fakeEmailQueueName: string
   let fakeInput: UserDepositInput
   let fakeSavedUser: SavedUser
   let findUserAccountByIdFakeRepository: Mocked<FindUserAccountById>
   let fakeUpdateUserBalanceRepository: Mocked<UpdateUserBalance>
-  let fakeSendConfirmationEmailToUserSdk: Mocked<SendConfirmationMailToUser>
+  let fakeSendConfirmationEmailToQueue: Mocked<SendToQueue>
 
   beforeAll(() => {
+    fakeEmailQueueName = 'any-queue-name'
+
     fakeInput = {
       amount: 100,
       userId: 'any-id',
@@ -32,15 +35,20 @@ describe('User Deposit Service', () => {
     fakeUpdateUserBalanceRepository = {
       updateBalance: vi.fn().mockResolvedValue(fakeSavedUser),
     }
-    fakeSendConfirmationEmailToUserSdk = {
-      send: vi.fn().mockResolvedValue(true),
+    fakeSendConfirmationEmailToQueue = {
+      sendToQueue: vi.fn(),
     }
   })
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    sut = new UserDepositService(findUserAccountByIdFakeRepository, fakeUpdateUserBalanceRepository, fakeSendConfirmationEmailToUserSdk)
+    sut = new UserDepositService(
+      findUserAccountByIdFakeRepository,
+      fakeUpdateUserBalanceRepository,
+      fakeSendConfirmationEmailToQueue,
+      fakeEmailQueueName,
+    )
   })
 
   it('should call findUserAccountByIdRepository.findById with received user id', async () => {
@@ -94,31 +102,24 @@ describe('User Deposit Service', () => {
     expect(() => promise).rejects.toThrow()
   })
 
-  it('should call sendConfirmationEmailToUserSdk.send with correct params', async () => {
-    await sut.handle(fakeInput)
-
-    expect(fakeSendConfirmationEmailToUserSdk.send).toHaveBeenCalledWith({
+  it('should call sendConfirmationEmailToQueue.sendToQueue with correct message', async () => {
+    const expectedOutputMessage = JSON.stringify({
       userEmail: 'valid@mail.com',
-      subject: 'Test API - Deposit of R$100 to any-name',
-      text: 'The requested amount was deposited in your account. This is a email sent from a technical test, and its not real money',
+      subject: 'Test API - Test deposit has been made',
+      text: 'Hello any-name, the deposit of R$100 was successfully made. This is a email sent from a technical test for a company, and its not real money',
     })
-    expect(fakeSendConfirmationEmailToUserSdk.send).toHaveBeenCalledTimes(1)
-  })
-
-  // TODO: Change this test when async implementation of email is made
-  it('should call console warn when sendConfirmationEmailToUserSdk.send throws', async () => {
-    const warnSpy = vi.spyOn(console, 'warn')
-
-    fakeSendConfirmationEmailToUserSdk.send.mockResolvedValueOnce(false)
 
     await sut.handle(fakeInput)
 
-    expect(warnSpy).toHaveBeenCalledWith('[UserDepositService]: Confirmation mail was not sent to user')
-    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(fakeSendConfirmationEmailToQueue.sendToQueue).toHaveBeenCalledWith({
+      queueName: 'any-queue-name',
+      message: expectedOutputMessage,
+    })
+    expect(fakeSendConfirmationEmailToQueue.sendToQueue).toHaveBeenCalledTimes(1)
   })
 
-  it('should rethrow when sendConfirmationEmailToUserSdk.send throws', async () => {
-    fakeSendConfirmationEmailToUserSdk.send.mockRejectedValueOnce(new Error('any-error'))
+  it('should rethrow when sendConfirmationEmailToQueue.sendToQueue throws', async () => {
+    fakeSendConfirmationEmailToQueue.sendToQueue.mockRejectedValueOnce(new Error('any-error'))
 
     const promise = sut.handle(fakeInput)
 

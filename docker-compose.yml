@@ -13,16 +13,34 @@ services:
       - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    expose:
+      - "5672"
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
   api:
     restart: 'no'
     expose:
       - '${PORT}'
     environment:
       DATABASE_URL: "postgresql://root:root@db:5432/investment?schema=public"
+      RABBITMQ_URL: "amqp://rabbitmq:5672"
       PORT: ${PORT}
       JWT_SECRET: ${JWT_SECRET}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       SENDGRID_EMAIL_SENDER: ${SENDGRID_EMAIL_SENDER}
+      NEW_DEPOSIT_CONFIRMATION_EMAIL_QUEUE_NAME: ${NEW_DEPOSIT_CONFIRMATION_EMAIL_QUEUE_NAME}
     container_name: investment-api
     build:
       context: .
@@ -33,7 +51,9 @@ services:
       - ./:/usr/src/app
     command: yarn start:local
     depends_on:
-      - db
-
+      db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 volumes:
   db_data:

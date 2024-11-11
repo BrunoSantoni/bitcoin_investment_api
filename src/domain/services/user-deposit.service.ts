@@ -1,12 +1,14 @@
 import { FindUserAccountById, UpdateUserBalance } from '@/domain/contracts/account-actions.contract'
 import { UserDeposit, UserDepositInput, UserDepositOutput } from '@/domain/contracts/user-deposit.contract'
-import { SendConfirmationMailToUser } from '@/domain/contracts/mail.contract'
+import { SendToQueue } from '@/domain/contracts/queue.contract'
+import { SendConfirmationMailToUserInput } from '@/domain/contracts/mail.contract'
 
 export class UserDepositService implements UserDeposit {
   constructor(
     private readonly findUserAccountByIdRepository: FindUserAccountById,
     private readonly updateUserBalanceRepository: UpdateUserBalance,
-    private readonly sendConfirmationEmailToUserSdk: SendConfirmationMailToUser,
+    private readonly sendConfirmationEmailToQueue: SendToQueue,
+    private readonly emailQueueName: string,
   ) {
   }
 
@@ -29,17 +31,18 @@ export class UserDepositService implements UserDeposit {
       type: 'deposit',
     })
 
-    // TODO: Async
-    const wasConfirmationEmailSent = await this.sendConfirmationEmailToUserSdk.send({
+    const messageToSendEmailQueue: SendConfirmationMailToUserInput = {
       userEmail: userAccount.email,
-      subject: `Test API - Deposit of R$${amount} to ${userAccount.name}`,
-      text: 'The requested amount was deposited in your account. This is a email sent from a technical test, and its not real money',
+      subject: `Test API - Test deposit has been made`,
+      text: `Hello ${userAccount.name}, the deposit of R$${amount} was successfully made. This is a email sent from a technical test for a company, and its not real money`,
+    }
+
+    await this.sendConfirmationEmailToQueue.sendToQueue({
+      queueName: this.emailQueueName,
+      message: JSON.stringify(messageToSendEmailQueue),
     })
 
-    if (!wasConfirmationEmailSent) {
-      // TODO: add retry
-      console.warn('[UserDepositService]: Confirmation mail was not sent to user')
-    }
+    console.log('[UserDepositService]: Confirmation email sent to queue')
 
     return {
       success: true,

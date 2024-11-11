@@ -14,11 +14,13 @@ This project consists in an API to invest in Bitcoins.
 2. Install dependencies: `yarn`;
 3. Copy `.env.example` to `.env`: `cp .env.example .env` (At `./src/main/config/env` a default JWT Secret is defined just to be easier to test);
 4. Start docker for DB: `docker compose up db` (Can use -d flag to detach from terminal);
-5. Generate *Prisma* and run migrations: `yarn db`;
-6. Run tests: `yarn test` or `yarn test:coverage`;
-7. Run application locally: `yarn start:local:watch` or `yarn start:local`.
+5. Start docker for RabbitMQ: `docker compose up rabbitmq`;
+6. Generate *Prisma* and run migrations: `yarn db`;
+7. Run tests: `yarn test` or `yarn test:coverage`;
+8. Run application locally: `yarn start:local:watch` or `yarn start:local`.
 # Observations
-- The SendGrid API Key and SendGrid API sender will be sent privately if you want to use the account I created.
+- The SendGrid API Key and SendGrid API sender will be sent privately if you want to use the account I created;
+- Integration tests uses database, be sure to run them on docker or locally before running tests.
 
 # Endpoints
 
@@ -83,3 +85,13 @@ curl --request POST \
 
 ### Response
 `Status Code: 204 No Content`
+
+# Next Steps
+Here are the next steps I will be working on:
+- Add the endpoints to consult Bitcoin value, get user balance, buy BTC and sell BTC;
+- Convert console.logs to Winston and add more logs;
+- Add API Key to increase security;
+- Add Redis to cache bitcoin response;
+- Abstract Fastify architecture (currently the API is attached to him);
+- Add E2E tests;
+- Add password reset.

@@ -5,5 +5,5 @@ export type SendConfirmationMailToUserInput = {
 }
 
 export interface SendConfirmationMailToUser {
-  send(input: SendConfirmationMailToUserInput): Promise<boolean>
+  send(input: SendConfirmationMailToUserInput): Promise<void>
 }

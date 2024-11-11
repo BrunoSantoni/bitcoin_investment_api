@@ -5,6 +5,31 @@ import { makeSignInController } from '@/main/factories/sign-in-controller.factor
 import { makeAuthMiddleware } from '@/main/factories/auth-middleware.factory'
 import { makeDepositController } from '@/main/factories/deposit.controller.factory'
 import { DepositControllerInput } from '@/application/controllers/deposit.controller'
+import { RabbitMQQueue } from '@/infra/queue/rabbitmq.queue'
+import { AsynchronousEmailSendGridWorker } from '@/main/workers/asynchronous-email.sendgrid.worker'
+
+const fastify = Fastify({
+  logger: true,
+})
+
+const rabbitMQQueue = new RabbitMQQueue(env.rabbitMQUrl)
+const asynchronousEmailWorker = new AsynchronousEmailSendGridWorker(rabbitMQQueue, env.sendGridApiKey, env.sendGridEmailSender, env.newDepositConfirmationEmailQueueName)
+
+const start = async (): Promise<void> => {
+  try {
+    await rabbitMQQueue.createConnection()
+    await asynchronousEmailWorker.consumeFromEmailsQueue()
+    await fastify.listen({
+      port: Number(env.port),
+      host: '0.0.0.0',
+    })
+    console.log(`[Server]: Server is running at ${env.port}`)
+  }
+  catch (error) {
+    fastify.log.error(error)
+    process.exit(1)
+  }
+}
 
 const authMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
   const authorizationHeader = request.headers.authorization
@@ -19,23 +44,6 @@ const authMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
   })
 
   request.userId = response.body.userId as string
-}
-
-const fastify = Fastify({
-  logger: true,
-})
-
-const start = async (): Promise<void> => {
-  try {
-    await fastify.listen({
-      port: Number(env.port),
-      host: '0.0.0.0',
-    })
-  }
-  catch (error) {
-    fastify.log.error(error)
-    process.exit(1)
-  }
 }
 
 fastify.post('/account', async (request, reply) => {
@@ -55,7 +63,7 @@ fastify.post('/login', async (request, reply) => {
 })
 
 fastify.post('/account/deposit', { preHandler: authMiddleware }, async (request, reply) => {
-  const depositController = makeDepositController()
+  const depositController = makeDepositController(rabbitMQQueue)
   const body = request.body as DepositControllerInput
 
   const response = await depositController.handle({
