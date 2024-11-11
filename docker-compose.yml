@@ -12,4 +12,28 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - ./db/data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
+  api:
+    restart: 'no'
+    expose:
+      - '${PORT}'
+    environment:
+      DATABASE_URL: "postgresql://root:root@db:5432/investment?schema=public"
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_EMAIL_SENDER: ${SENDGRID_EMAIL_SENDER}
+    container_name: investment-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - ./:/usr/src/app
+    command: yarn start:local
+    depends_on:
+      - db
+
+volumes:
+  db_data:

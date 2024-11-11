@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "local:start": "tsx watch src/main/server.ts",
+    "start:local:watch": "tsx watch src/main/server.ts",
+    "start:local": "tsx src/main/server.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "db": "yarn prisma generate && yarn prisma migrate dev"

@@ -29,6 +29,7 @@ const start = async (): Promise<void> => {
   try {
     await fastify.listen({
       port: Number(env.port),
+      host: '0.0.0.0',
     })
   }
   catch (error) {
