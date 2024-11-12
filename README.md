@@ -75,7 +75,7 @@ curl --request POST \
 ### Request
 ```shell
 curl --request POST \
-  --url http://localhost:3333/account/deposit \
+  --url http://{api_url}/account/deposit \
   --header 'Authorization: Bearer jwt-token' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -85,6 +85,24 @@ curl --request POST \
 
 ### Response
 `Status Code: 204 No Content`
+
+## Obtain account balance
+`GET /account/balance`
+
+### Request
+```shell
+curl --request GET \
+  --url http://{api_url}/account/balance \
+  --header 'Authorization: Bearer jwt-token'
+```
+
+### Response
+`Status Code: 200 OK`
+```json
+{
+  "balance": 100
+}
+```
 
 # Next Steps
 Here are the next steps I will be working on:

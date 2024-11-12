@@ -7,6 +7,7 @@ import { makeDepositController } from '@/main/factories/deposit.controller.facto
 import { DepositControllerInput } from '@/application/controllers/deposit.controller'
 import { RabbitMQQueue } from '@/infra/queue/rabbitmq.queue'
 import { AsynchronousEmailSendGridWorker } from '@/main/workers/asynchronous-email.sendgrid.worker'
+import { makeBalanceController } from '@/main/factories/balance.controller.factory'
 
 const fastify = Fastify({
   logger: true,
@@ -68,6 +69,16 @@ fastify.post('/account/deposit', { preHandler: authMiddleware }, async (request,
 
   const response = await depositController.handle({
     amount: body.amount,
+    userId: request.userId as string,
+  })
+
+  return reply.status(response.status).send(response.body)
+})
+
+fastify.get('/account/balance', { preHandler: authMiddleware }, async (request, reply) => {
+  const balanceController = makeBalanceController()
+
+  const response = await balanceController.handle({
     userId: request.userId as string,
   })
 
