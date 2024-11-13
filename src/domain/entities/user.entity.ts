@@ -38,6 +38,10 @@ export class User {
     return this._password
   }
 
+  convertBalanceInBRL() {
+    return this._balanceInCents / 100
+  }
+
   private setEmail(email: string): string {
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
