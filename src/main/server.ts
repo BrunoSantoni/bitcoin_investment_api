@@ -8,18 +8,25 @@ import { DepositControllerInput } from '@/application/controllers/deposit.contro
 import { RabbitMQQueue } from '@/infra/queue/rabbitmq.queue'
 import { AsynchronousEmailSendGridWorker } from '@/main/workers/asynchronous-email.sendgrid.worker'
 import { makeBalanceController } from '@/main/factories/balance.controller.factory'
+import { makeBTCPriceController } from '@/main/factories/btc-price.controller.factory'
+import { RedisCache } from '@/infra/cache/redis.cache'
+import { AsynchronousCacheSaverWorker } from '@/main/workers/asynchronous-cache-saver.worker'
 
 const fastify = Fastify({
   logger: true,
 })
 
 const rabbitMQQueue = new RabbitMQQueue(env.rabbitMQUrl)
+const redisCache = new RedisCache(env.cacheUrl)
 const asynchronousEmailWorker = new AsynchronousEmailSendGridWorker(rabbitMQQueue, env.sendGridApiKey, env.sendGridEmailSender, env.newDepositConfirmationEmailQueueName)
+const asynchronousCacheSaverWorker = new AsynchronousCacheSaverWorker(rabbitMQQueue, env.cacheSaverQueueName, redisCache)
 
 const start = async (): Promise<void> => {
   try {
     await rabbitMQQueue.createConnection()
+    await redisCache.connect()
     await asynchronousEmailWorker.consumeFromEmailsQueue()
+    await asynchronousCacheSaverWorker.consumeFromCacheSaverQueue()
     await fastify.listen({
       port: Number(env.port),
       host: '0.0.0.0',
@@ -27,6 +34,7 @@ const start = async (): Promise<void> => {
     console.log(`[Server]: Server is running at ${env.port}`)
   }
   catch (error) {
+    await redisCache.disconnect()
     fastify.log.error(error)
     process.exit(1)
   }
@@ -81,6 +89,14 @@ fastify.get('/account/balance', { preHandler: authMiddleware }, async (request, 
   const response = await balanceController.handle({
     userId: request.userId as string,
   })
+
+  return reply.status(response.status).send(response.body)
+})
+
+fastify.get('/btc/price', { preHandler: authMiddleware }, async (request, reply) => {
+  const btcPriceController = makeBTCPriceController(redisCache, rabbitMQQueue)
+
+  const response = await btcPriceController.handle()
 
   return reply.status(response.status).send(response.body)
 })

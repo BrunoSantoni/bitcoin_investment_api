@@ -29,11 +29,17 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+  cache:
+    image: redis:latest
+    restart: 'no'
+    ports:
+      - '6379:6379'
   api:
     restart: 'no'
     expose:
       - '${PORT}'
     environment:
+      CACHE_URL: "redis://cache:6379"
       DATABASE_URL: "postgresql://root:root@db:5432/investment?schema=public"
       RABBITMQ_URL: "amqp://rabbitmq:5672"
       PORT: ${PORT}
@@ -41,6 +47,8 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       SENDGRID_EMAIL_SENDER: ${SENDGRID_EMAIL_SENDER}
       NEW_DEPOSIT_CONFIRMATION_EMAIL_QUEUE_NAME: ${NEW_DEPOSIT_CONFIRMATION_EMAIL_QUEUE_NAME}
+      CACHE_SAVER_QUEUE_NAME: ${CACHE_SAVER_QUEUE_NAME}
+      BITCOIN_PRICE_API_BASE_URL: ${BITCOIN_PRICE_API_BASE_URL}
     container_name: investment-api
     build:
       context: .
@@ -51,6 +59,8 @@ services:
       - ./:/usr/src/app
     command: yarn start:local
     depends_on:
+      cache:
+        condition: service_started
       db:
         condition: service_started
       rabbitmq:
