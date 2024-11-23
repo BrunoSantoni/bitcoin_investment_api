@@ -2,14 +2,18 @@ import { BaseController } from '@/application/controllers/base.controller'
 import { HttpResponse } from '@/application/contracts/http.contract'
 import { badRequest, ok } from '@/application/presenters/http.presenter'
 import { BTCPrice } from '@/domain/contracts/btc-price.contract'
+import { Validator } from '@/application/contracts/validator.contract'
 
-export type BTCPriceControllerInput = void
+export type BTCPriceControllerInput = {
+  userId: string
+}
 
 export class BTCPriceController extends BaseController<BTCPriceControllerInput> {
   name = 'BTCPriceController'
 
   constructor(
     private readonly btcPriceService: BTCPrice,
+    private readonly validator: Validator<BTCPriceControllerInput>,
   ) {
     super()
   }
@@ -26,6 +30,7 @@ export class BTCPriceController extends BaseController<BTCPriceControllerInput> 
     })
   }
 
-  protected validate(): void {
+  protected validate(payload: BTCPriceControllerInput): void {
+    this.validator.validate(payload)
   }
 }

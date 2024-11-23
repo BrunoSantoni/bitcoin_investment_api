@@ -15,6 +15,7 @@ describe('RabbitMQ Queue', () => {
   let mockConsume: Mock
   let mockAck: Mock
   let mockSendToQueue: Mock
+  let mockCloseConnection: Mock
 
   beforeAll(() => {
     fakeUrl = 'any-url'
@@ -34,8 +35,10 @@ describe('RabbitMQ Queue', () => {
       sendToQueue: mockSendToQueue,
       ack: mockAck,
     })
+    mockCloseConnection = vi.fn().mockResolvedValue(true)
     mockConnect = vi.fn().mockResolvedValue({
       createChannel: mockCreateChannel,
+      close: mockCloseConnection,
     })
 
     amqp.connect = mockConnect
@@ -61,6 +64,30 @@ describe('RabbitMQ Queue', () => {
       mockConnect.mockRejectedValueOnce(new Error('any-error'))
 
       const promise = sut.createConnection()
+
+      expect(promise).rejects.toThrow()
+    })
+  })
+
+  describe('closeConnection', () => {
+    it('should close connection when exists', async () => {
+      await sut.closeConnection()
+      expect(mockCloseConnection).toHaveBeenCalledWith()
+      expect(mockCloseConnection).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not call close method when connection does not exists', async () => {
+      const sut = new RabbitMQQueue(fakeUrl)
+
+      await sut.closeConnection()
+
+      expect(mockCloseConnection).not.toHaveBeenCalled()
+    })
+
+    it('should throw on error', async () => {
+      mockCloseConnection.mockRejectedValueOnce(new Error('any-error'))
+
+      const promise = sut.closeConnection()
 
       expect(promise).rejects.toThrow()
     })

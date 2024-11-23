@@ -24,10 +24,6 @@ export type CacheAdapterInput = {
 }
 
 export type CacheAdapter = {
-  isReady: boolean
-  on: (key: string, callback: never) => void
-  get: (key: string) => Promise<string | null>
-  set: (key: string, value: string, options?: object) => Promise<string | null>
-  connect: () => Promise<CacheAdapter>
+  connect: () => Promise<void>
   disconnect: () => Promise<void>
 }

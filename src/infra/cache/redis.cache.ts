@@ -1,4 +1,4 @@
-import { createClient } from 'redis'
+import { createClient, RedisClientType } from 'redis'
 import {
   CacheAdapter,
   CacheAdapterInput,
@@ -9,10 +9,10 @@ import {
   SaveOnCacheInput,
 } from '@/domain/contracts/cache.contract'
 
-export class RedisCache implements FindOnCacheByKey, SaveOnCache {
+export class RedisCache implements CacheAdapter, FindOnCacheByKey, SaveOnCache {
   private static instance: RedisCache
 
-  private cacheClient: CacheAdapter
+  private cacheClient: RedisClientType
 
   private MAX_RETRIES = 5
 
@@ -89,7 +89,7 @@ export class RedisCache implements FindOnCacheByKey, SaveOnCache {
     return this.RETRY_DELAY
   }
 
-  private createCacheClient(): CacheAdapter {
+  private createCacheClient(): RedisClientType {
     return createClient({
       url: this.cacheClientUrl,
       socket: {

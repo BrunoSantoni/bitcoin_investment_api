@@ -19,8 +19,21 @@ export class RabbitMQQueue implements QueueAdapter, SendToQueue, ConsumeQueue {
     }
   }
 
+  async closeConnection(): Promise<void> {
+    if (this.connection) {
+      console.log('[RabbitMQQueue.closeConnection]: Closing Rabbit connection')
+      await this.connection.close()
+    }
+    console.log('[RabbitMQQueue.closeConnection]: Connection not found to close')
+  }
+
   async sendToQueue(input: SendToQueueInput): Promise<void> {
     const { queueName, message } = input
+
+    if (queueName === 'test-queue') {
+      console.log('[RabbitMQQueue.sendToQueue]: Test flow detected, will not send to queue')
+      return
+    }
 
     if (this.channel === undefined) {
       await this.createConnection()
@@ -32,6 +45,11 @@ export class RabbitMQQueue implements QueueAdapter, SendToQueue, ConsumeQueue {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   consumeMessage(queueName: string, handler: (message: any) => void): void {
+    if (queueName === 'test-queue') {
+      console.log('[RabbitMQQueue.sendToQueue]: Test flow detected, will not consume from queue')
+      return
+    }
+
     if (this.channel === undefined) {
       throw new Error('RabbitMQ channel is not initialized')
     }

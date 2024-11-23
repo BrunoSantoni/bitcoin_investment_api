@@ -1,104 +1,113 @@
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify'
 import { env } from '@/main/config/env'
 import { makeSignUpController } from '@/main/factories/sign-up-controller.factory'
 import { makeSignInController } from '@/main/factories/sign-in-controller.factory'
-import { makeAuthMiddleware } from '@/main/factories/auth-middleware.factory'
 import { makeDepositController } from '@/main/factories/deposit.controller.factory'
 import { DepositControllerInput } from '@/application/controllers/deposit.controller'
-import { RabbitMQQueue } from '@/infra/queue/rabbitmq.queue'
-import { AsynchronousEmailSendGridWorker } from '@/main/workers/asynchronous-email.sendgrid.worker'
 import { makeBalanceController } from '@/main/factories/balance.controller.factory'
 import { makeBTCPriceController } from '@/main/factories/btc-price.controller.factory'
-import { RedisCache } from '@/infra/cache/redis.cache'
-import { AsynchronousCacheSaverWorker } from '@/main/workers/asynchronous-cache-saver.worker'
+import { HttpMethods, HttpRequest } from '@/application/contracts/http.contract'
+import { makeAppDependencies } from '@/main/factories/app-dependencies.factory'
+import { authMiddleware } from '@/infra/adapters/middlewares/fastify-auth-middleware.adapter'
 
-const fastify = Fastify({
-  logger: true,
-})
-
-const rabbitMQQueue = new RabbitMQQueue(env.rabbitMQUrl)
-const redisCache = new RedisCache(env.cacheUrl)
-const asynchronousEmailWorker = new AsynchronousEmailSendGridWorker(rabbitMQQueue, env.sendGridApiKey, env.sendGridEmailSender, env.newDepositConfirmationEmailQueueName)
-const asynchronousCacheSaverWorker = new AsynchronousCacheSaverWorker(rabbitMQQueue, env.cacheSaverQueueName, redisCache)
+const { queue, queueSender, cache, cacheFinderByKey, asynchronousEmailWorker, asynchronousCacheSaverWorker, httpServer } = makeAppDependencies()
 
 const start = async (): Promise<void> => {
   try {
-    await rabbitMQQueue.createConnection()
-    await redisCache.connect()
-    await asynchronousEmailWorker.consumeFromEmailsQueue()
-    await asynchronousCacheSaverWorker.consumeFromCacheSaverQueue()
-    await fastify.listen({
-      port: Number(env.port),
-      host: '0.0.0.0',
-    })
-    console.log(`[Server]: Server is running at ${env.port}`)
+    await queue.createConnection()
+    await cache.connect()
+    await asynchronousEmailWorker.listenFromQueue()
+    await asynchronousCacheSaverWorker.listenFromQueue()
+    await httpServer.listen(Number(env.port))
   }
   catch (error) {
-    await redisCache.disconnect()
-    fastify.log.error(error)
+    await queue.closeConnection()
+    await cache.disconnect()
+    httpServer.log({
+      level: 'error',
+      message: 'Unexpected error',
+      extra: error,
+    })
     process.exit(1)
   }
 }
 
-const authMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
-  const authorizationHeader = request.headers.authorization
-  if (authorizationHeader === undefined) {
-    return reply.status(401).send({ error: 'No token provided' })
-  }
-  const [, accessToken] = authorizationHeader.split(' ')
-  const authMiddleware = makeAuthMiddleware()
+httpServer.handleRoute({
+  method: HttpMethods.POST,
+  url: '/account',
+  callback: async ({ body }: HttpRequest) => {
+    httpServer.log({
+      level: 'info',
+      message: 'Create account route called',
+    })
+    const signUpController = makeSignUpController()
 
-  const response = await authMiddleware.handle({
-    accessToken,
-  })
+    const response = await signUpController.handle(body)
 
-  request.userId = response.body.userId as string
-}
-
-fastify.post('/account', async (request, reply) => {
-  const signUpController = makeSignUpController()
-
-  const response = await signUpController.handle(request.body as never)
-
-  return reply.status(response.status).send(response.body)
+    return response
+  },
 })
 
-fastify.post('/login', async (request, reply) => {
-  const signInController = makeSignInController()
+httpServer.handleRoute({
+  method: HttpMethods.POST,
+  url: '/login',
+  callback: async ({ body }: HttpRequest) => {
+    const signInController = makeSignInController()
 
-  const response = await signInController.handle(request.body as never)
+    const response = await signInController.handle(body)
 
-  return reply.status(response.status).send(response.body)
+    return response
+  },
 })
 
-fastify.post('/account/deposit', { preHandler: authMiddleware }, async (request, reply) => {
-  const depositController = makeDepositController(rabbitMQQueue)
-  const body = request.body as DepositControllerInput
+httpServer.handleRoute({
+  method: HttpMethods.POST,
+  url: '/account/deposit',
+  middleware: authMiddleware as never,
+  callback: async ({ body, userId }: HttpRequest) => {
+    const depositController = makeDepositController(queueSender)
+    const typedBody = body as DepositControllerInput
 
-  const response = await depositController.handle({
-    amount: body.amount,
-    userId: request.userId as string,
-  })
+    const response = await depositController.handle({
+      amount: typedBody.amount,
+      userId: userId as string,
+    })
 
-  return reply.status(response.status).send(response.body)
+    return response
+  },
 })
 
-fastify.get('/account/balance', { preHandler: authMiddleware }, async (request, reply) => {
-  const balanceController = makeBalanceController()
+httpServer.handleRoute({
+  method: HttpMethods.GET,
+  url: '/account/balance',
+  middleware: authMiddleware as never,
+  callback: async ({ userId }: HttpRequest) => {
+    const balanceController = makeBalanceController()
 
-  const response = await balanceController.handle({
-    userId: request.userId as string,
-  })
+    const response = await balanceController.handle({
+      userId: userId as string,
+    })
 
-  return reply.status(response.status).send(response.body)
+    return response
+  },
 })
 
-fastify.get('/btc/price', { preHandler: authMiddleware }, async (request, reply) => {
-  const btcPriceController = makeBTCPriceController(redisCache, rabbitMQQueue)
+httpServer.handleRoute({
+  method: HttpMethods.GET,
+  url: '/btc/price',
+  middleware: authMiddleware as never,
+  callback: async ({ userId }: HttpRequest) => {
+    const btcPriceController = makeBTCPriceController(cacheFinderByKey, queueSender)
 
-  const response = await btcPriceController.handle()
+    const response = await btcPriceController.handle({
+      userId: userId as string,
+    })
 
-  return reply.status(response.status).send(response.body)
+    return response
+  },
 })
 
 void start()
+
+export {
+  httpServer,
+}

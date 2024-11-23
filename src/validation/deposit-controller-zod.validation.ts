@@ -4,7 +4,7 @@ import { DepositControllerInput } from '@/application/controllers/deposit.contro
 
 export class DepositControllerZodValidation extends BaseZodValidation<DepositControllerInput> {
   protected schema = z.object({
-    amount: z.number().gt(0, 'Its not possible to deposite negative values'),
-    userId: z.string(),
+    amount: z.number().gt(0, 'Its not possible to deposit negative values'),
+    userId: z.string({ message: 'Missing information' }),
   })
 }

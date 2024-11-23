@@ -33,9 +33,9 @@ describe('Asynchronous Cache Saver Worker', () => {
     sut = new AsynchronousCacheSaverWorker(fakeQueueConsumer, fakeQueueName, fakeCacheSaver)
   })
 
-  describe('consumeFromCacheSaverQueue', () => {
+  describe('listenFromQueue', () => {
     it('should call cacheSaver.save with correct params', async () => {
-      await sut.consumeFromCacheSaverQueue()
+      await sut.listenFromQueue()
 
       expect(fakeCacheSaver.save).toHaveBeenCalledWith({
         key: fakeInput.key,

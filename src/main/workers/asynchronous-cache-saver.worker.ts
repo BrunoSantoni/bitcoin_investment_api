@@ -1,4 +1,4 @@
-import { ConsumeQueue } from '@/domain/contracts/queue.contract'
+import { ConsumeQueue, ListenQueue } from '@/domain/contracts/queue.contract'
 import { SaveOnCache } from '@/domain/contracts/cache.contract'
 
 type AsynchronousCacheSaverWorkerParsedMessage = {
@@ -6,16 +6,16 @@ type AsynchronousCacheSaverWorkerParsedMessage = {
   [x: string]: string
 }
 
-export class AsynchronousCacheSaverWorker {
+export class AsynchronousCacheSaverWorker implements ListenQueue {
   constructor(
     private readonly queueConsumer: ConsumeQueue,
     private readonly queueName: string,
     private readonly cacheSaverHandler: SaveOnCache,
   ) {}
 
-  async consumeFromCacheSaverQueue(): Promise<void> {
+  async listenFromQueue(): Promise<void> {
     this.queueConsumer.consumeMessage(this.queueName, async (message: string) => {
-      console.log('[AsynchronousCacheSaverWorker.consumeFromCacheSaverQueue]: Message received', message)
+      console.log('[AsynchronousCacheSaverWorker.consumeFromQueue]: Message received', message)
       const parsedMessage: AsynchronousCacheSaverWorkerParsedMessage = JSON.parse(message)
 
       await this.cacheSaverHandler.save({
@@ -23,7 +23,7 @@ export class AsynchronousCacheSaverWorker {
         value: message,
       })
 
-      console.log('[AsynchronousCacheSaverWorker.consumeFromCacheSaverQueue]: Message saved on cache', message)
+      console.log('[AsynchronousCacheSaverWorker.consumeFromQueue]: Message saved on cache', message)
     })
   }
 }
