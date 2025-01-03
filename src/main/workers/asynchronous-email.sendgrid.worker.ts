@@ -1,8 +1,8 @@
 import sendGridSdk from '@sendgrid/mail'
 import { SendConfirmationMailToUser, SendConfirmationMailToUserInput } from '@/domain/contracts/mail.contract'
-import { ConsumeQueue } from '@/domain/contracts/queue.contract'
+import { ConsumeQueue, ListenQueue } from '@/domain/contracts/queue.contract'
 
-export class AsynchronousEmailSendGridWorker implements SendConfirmationMailToUser {
+export class AsynchronousEmailSendGridWorker implements SendConfirmationMailToUser, ListenQueue {
   constructor(
     private readonly queueConsumer: ConsumeQueue,
     private readonly sendGridApiKey: string,
@@ -12,9 +12,9 @@ export class AsynchronousEmailSendGridWorker implements SendConfirmationMailToUs
     sendGridSdk.setApiKey(this.sendGridApiKey)
   }
 
-  async consumeFromEmailsQueue(): Promise<void> {
+  async listenFromQueue(): Promise<void> {
     this.queueConsumer.consumeMessage(this.queueName, async (message: string) => {
-      console.log('[AsynchronousEmailSendGridWorker.consumeFromEmailsQueue]: Message received', message)
+      console.log('[AsynchronousEmailSendGridWorker.consumeFromQueue]: Message received', message)
       const parsedMessage: SendConfirmationMailToUserInput = JSON.parse(message)
 
       await this.send({
@@ -23,7 +23,7 @@ export class AsynchronousEmailSendGridWorker implements SendConfirmationMailToUs
         text: parsedMessage.text,
       })
 
-      console.log('[AsynchronousEmailSendGridWorker.consumeFromEmailsQueue]: Confirmation email sent', message)
+      console.log('[AsynchronousEmailSendGridWorker.consumeFromQueue]: Confirmation email sent', message)
     })
   }
 

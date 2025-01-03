@@ -20,7 +20,9 @@ describe('Account Prisma Repository Integration', () => {
   beforeEach(async () => {
     await prismaClient.user.deleteMany({
       where: {
-        name: 'integration-test-any-name',
+        name: {
+          contains: 'integration-test',
+        },
       },
     })
 
@@ -30,7 +32,9 @@ describe('Account Prisma Repository Integration', () => {
   afterAll(async () => {
     await prismaClient.user.deleteMany({
       where: {
-        name: 'integration-test-any-name',
+        name: {
+          contains: 'integration-test',
+        },
       },
     })
   })
@@ -139,7 +143,7 @@ describe('Account Prisma Repository Integration', () => {
     it('should update balance on success', async () => {
       const createdUser = await prismaClient.user.create({
         data: {
-          name: 'integration-test-any-name',
+          name: 'integration-test-any-name-2',
           email: 'used@mail.com',
           password: 'any-hashed-password',
           balance: 9000,

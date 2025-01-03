@@ -37,6 +37,20 @@ describe('User Entity', () => {
 
     expect(() => new User(input)).toThrow()
   })
+
+  it('should convert balance in BRL', () => {
+    const input: UserInput = {
+      name: 'any-name',
+      email: 'any@mail.com',
+      hashedPassword: 'any-hashed-password',
+      balanceInCents: 1000,
+    }
+
+    const user = new User(input)
+    const output = user.convertBalanceInBRL()
+
+    expect(output).toBe(10)
+  })
 })
 
 describe('SavedUser Entity', () => {

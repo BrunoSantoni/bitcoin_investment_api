@@ -12,6 +12,11 @@ export interface ConsumeQueue {
   consumeMessage(queueName: string, handler: (message: any) => void): void
 }
 
+export interface ListenQueue {
+  listenFromQueue(): Promise<void>
+}
+
 export interface QueueAdapter {
   createConnection(): Promise<void>
+  closeConnection(): Promise<void>
 }

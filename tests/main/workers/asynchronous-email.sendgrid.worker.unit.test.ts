@@ -40,11 +40,11 @@ describe('Asynchronous Email Sendgrid Worker', () => {
     sut = new AsynchronousEmailSendGridWorker(fakeQueueConsumer, fakeSendGridApiKey, fakeSender, fakeQueueName)
   })
 
-  describe('consumeFromEmailsQueue', () => {
+  describe('listenFromQueue', () => {
     it('should call AsynchronousEmailSendGridWorker.send with correct params', async () => {
       const sendSpy = vi.spyOn(AsynchronousEmailSendGridWorker.prototype, 'send')
 
-      await sut.consumeFromEmailsQueue()
+      await sut.listenFromQueue()
 
       expect(sendSpy).toHaveBeenCalledWith(fakeInput)
       expect(sendSpy).toHaveBeenCalledTimes(1)
